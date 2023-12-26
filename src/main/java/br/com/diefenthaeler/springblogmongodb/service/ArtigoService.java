@@ -2,9 +2,11 @@ package br.com.diefenthaeler.springblogmongodb.service;
 
 import br.com.diefenthaeler.springblogmongodb.model.Artigo;
 import br.com.diefenthaeler.springblogmongodb.model.ArtigoStatusCount;
+import br.com.diefenthaeler.springblogmongodb.model.Autor;
 import br.com.diefenthaeler.springblogmongodb.model.AutorTotalArtigo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,7 +18,14 @@ public interface ArtigoService {
 
     Artigo obterPorCodigo(String codigo);
 
-    Artigo criar(Artigo artigo);
+//    Artigo criar(Artigo artigo);
+
+//    ResponseEntity<?> criar(Artigo artigo);
+
+    ResponseEntity<?> criarArtigoComAutor(Artigo artigo, Autor autor);
+
+    void excluirArtigoEAutor (Artigo artigo);
+    ResponseEntity<?> atualizarArtigo(String id, Artigo artigo);
 
     List<Artigo> findByDataGreaterThan(LocalDateTime data);
 

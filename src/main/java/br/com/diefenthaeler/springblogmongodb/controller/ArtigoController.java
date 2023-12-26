@@ -1,12 +1,13 @@
 package br.com.diefenthaeler.springblogmongodb.controller;
 
-import br.com.diefenthaeler.springblogmongodb.model.Artigo;
-import br.com.diefenthaeler.springblogmongodb.model.ArtigoStatusCount;
-import br.com.diefenthaeler.springblogmongodb.model.AutorTotalArtigo;
+import br.com.diefenthaeler.springblogmongodb.model.*;
 import br.com.diefenthaeler.springblogmongodb.service.ArtigoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,17 @@ public class ArtigoController {
 
     private final ArtigoService artigoService;
 
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<String> handleOptmisticLockingFailureException(
+            OptimisticLockingFailureException ex
+    ) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body("Erro de concorrencia: O artigo foi atualizado" +
+                        " por outro usuario." +
+                        "Por favor, tente novamente!");
+
+    }
+
     @GetMapping
     public List<Artigo> obterTodos() {
         return this.artigoService.obterTodos();
@@ -32,9 +44,30 @@ public class ArtigoController {
         return this.artigoService.obterPorCodigo(codigo);
     }
 
-    @PostMapping
+/*    @PostMapping
     public Artigo criar(@RequestBody Artigo artigo) {
         return this.artigoService.criar(artigo);
+    }*/
+
+/*    @PostMapping
+    public ResponseEntity<?> criar(@RequestBody Artigo artigo) {
+        return this.artigoService.criar(artigo);
+    }*/
+
+    @PostMapping
+    public ResponseEntity<?> criarArtigoComAutor(
+            @RequestBody ArtigoComAutorRequest request
+    ) {
+        Artigo artigo = request.getArtigo();
+        Autor autor = request.getAutor();
+
+        return this.artigoService.criarArtigoComAutor(artigo, autor);
+    }
+
+    @PutMapping("/atualizar-artigo/{id}")
+    public ResponseEntity<?> atualizarArtigo(@PathVariable("id") String id,
+                                             @Valid @RequestBody Artigo artigo) {
+        return this.artigoService.atualizarArtigo(id, artigo);
     }
 
     @GetMapping("/maiordata")
@@ -56,6 +89,12 @@ public class ArtigoController {
     public void atualizarArtigo(@PathVariable String id,
                                 @RequestBody String novaUrl) {
         this.artigoService.atualizarArtigo(id, novaUrl);
+    }
+
+
+    @DeleteMapping("/delete-artigo-autor")
+    public void excluirArtigoEAutor(@RequestBody Artigo artigo){
+        this.artigoService.excluirArtigoEAutor(artigo);
     }
 
     @DeleteMapping("/{id}")
